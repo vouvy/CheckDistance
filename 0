@@ -1,0 +1,65 @@
+local maxDistance = 99
+
+local Http = game:GetService("HttpService")
+local TPS = game:GetService("TeleportService")
+local Api = "https://games.roblox.com/v1/games/"
+local _place = game.PlaceId
+local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
+
+function ListServers(cursor)
+    local Raw = Http:GetAsync(_servers .. ((cursor and "&cursor="..cursor) or ""))
+    return Http:JSONDecode(Raw)
+end
+
+local function HopServer()
+    local Server, Next
+    repeat
+        local Servers = ListServers(Next)
+        local serverIndex = math.random(1, #Servers.data)
+        Server = Servers.data[serverIndex]
+        Next = Servers.nextPageCursor
+    until Server
+    TPS:TeleportToPlaceInstance(_place, Server.id, game:GetService('Players').LocalPlayer)
+end
+
+local localPlayer = game.Players.LocalPlayer
+
+if localPlayer then
+    spawn(function()
+        while true do
+            local localPosition = localPlayer.Character.HumanoidRootPart.Position
+            local closestPlayer = nil
+            local closestDistance = nil
+
+            for _, player in pairs(game.Players:GetChildren()) do
+                if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local targetPosition = player.Character.HumanoidRootPart.Position
+                    local distance = (targetPosition - localPosition).Magnitude
+
+                    if closestDistance == nil or distance < closestDistance then
+                        closestDistance = distance
+                        closestPlayer = player
+                    end
+                end
+            end
+
+            if closestPlayer and closestDistance then
+                print("Closest Player: " .. closestPlayer.Name .. ", Distance: " .. closestDistance)
+
+                if closestDistance > maxDistance then
+                    print("Distance is greater than " .. maxDistance .. ". Hopping server...")
+                    HopServer()
+                    break
+                else
+                    print("Distance is within acceptable range.")
+                end
+            else
+                print("No players found nearby.")
+            end
+
+            wait(3) -- Check every 3 seconds
+        end
+    end)
+else
+    print("Local player not found")
+end
