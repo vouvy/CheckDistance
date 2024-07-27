@@ -1,4 +1,4 @@
-local maxDistance = 99
+local maxDistance = 10
 
 local Http = game:GetService("HttpService")
 local TPS = game:GetService("TeleportService")
@@ -35,7 +35,7 @@ if localPlayer then
                     local targetPosition = player.Character.HumanoidRootPart.Position
                     local distance = (targetPosition - localPosition).Magnitude
 
-                    if distance > maxDistance then
+                    if distance <= maxDistance then
                         shouldHop = true
                         break
                     end
@@ -43,11 +43,11 @@ if localPlayer then
             end
 
             if shouldHop then
-                print("A player is beyond " .. maxDistance .. " distance. Hopping server...")
+                print("A player is within " .. maxDistance .. " distance. Hopping server...")
                 HopServer()
                 break
             else
-                print("All players are within acceptable range.")
+                print("No players within " .. maxDistance .. " distance.")
             end
 
             wait(3) -- Check every 3 seconds
