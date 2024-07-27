@@ -28,33 +28,26 @@ if localPlayer then
     spawn(function()
         while true do
             local localPosition = localPlayer.Character.HumanoidRootPart.Position
-            local closestPlayer = nil
-            local closestDistance = nil
+            local shouldHop = false
 
             for _, player in pairs(game.Players:GetChildren()) do
                 if player ~= localPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                     local targetPosition = player.Character.HumanoidRootPart.Position
                     local distance = (targetPosition - localPosition).Magnitude
 
-                    if closestDistance == nil or distance < closestDistance then
-                        closestDistance = distance
-                        closestPlayer = player
+                    if distance > maxDistance then
+                        shouldHop = true
+                        break
                     end
                 end
             end
 
-            if closestPlayer and closestDistance then
-                print("Closest Player: " .. closestPlayer.Name .. ", Distance: " .. closestDistance)
-
-                if closestDistance > maxDistance then
-                    print("Distance is greater than " .. maxDistance .. ". Hopping server...")
-                    HopServer()
-                    break
-                else
-                    print("Distance is within acceptable range.")
-                end
+            if shouldHop then
+                print("A player is beyond " .. maxDistance .. " distance. Hopping server...")
+                HopServer()
+                break
             else
-                print("No players found nearby.")
+                print("All players are within acceptable range.")
             end
 
             wait(3) -- Check every 3 seconds
