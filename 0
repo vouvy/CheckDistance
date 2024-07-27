@@ -7,30 +7,17 @@ local _place = game.PlaceId
 local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
 
 function ListServers(cursor)
-    local url = _servers .. ((cursor and "&cursor="..cursor) or "")
-    local success, response = pcall(function()
-        return Http:GetAsync(url)
-    end)
-    if success then
-        return Http:JSONDecode(response)
-    else
-        warn("Failed to get server list: " .. response)
-        return nil
-    end
+    local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
+    return Http:JSONDecode(Raw)
 end
 
 local function HopServer()
     local Server, Next
     repeat
         local Servers = ListServers(Next)
-        if Servers then
-            local serverIndex = math.random(1, #Servers.data)
-            Server = Servers.data[serverIndex]
-            Next = Servers.nextPageCursor
-        else
-            warn("Failed to retrieve servers, retrying...")
-            wait(1) -- Wait a bit before retrying
-        end
+        local serverIndex = math.random(1, #Servers.data)
+        Server = Servers.data[serverIndex]
+        Next = Servers.nextPageCursor
     until Server
     TPS:TeleportToPlaceInstance(_place, Server.id, game:GetService('Players').LocalPlayer)
 end
